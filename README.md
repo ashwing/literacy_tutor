@@ -1,73 +1,94 @@
-# React + TypeScript + Vite
+# Writing Buddy ✍️
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Writing Buddy** is an interactive, AI-powered literacy tutor designed to help students (Grades 3-5) improve their reading and writing skills. It features a friendly AI companion that provides real-time feedback, generates engaging stories, and guides students through structured writing exercises.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 1. **Free Write Mode** 📝
+- Creative writing area with AI-generated prompts.
+- **"Publish Story"** button to celebrate completion with confetti!
+- **AI Feedback**: Get instant, encouraging feedback on grammar, creativity, and clarity.
+- **Score Gating**: Submission is gated until the student achieves a quality score of 8/10.
 
-## React Compiler
+### 2. **Reading Comprehension** 📖
+- Generates unique reading passages tailored to the student's grade level.
+- AI creates comprehension questions that require inferential thinking.
+- **Context-Aware**: The AI tutor knows exactly what story you're reading and can check your answers.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 3. **RACE Practice** 🏃‍♂️
+- Structured practice for constructed responses using the **R**estate, **A**nswer, **C**ite, **E**xplain strategy.
+- AI generates short texts and questions to practice specific skills.
 
-## Expanding the ESLint configuration
+### 4. **Dashboard & Progress Tracking** 📊
+- **Activity Grid**: Visualize "Last 30 Days" of activity (GitHub-style).
+- **Stats**: Track words written, stories read, and daily streaks.
+- **Badges**: Earn achievements for consistent practice.
+- **Persistence**: All progress is saved locally, so you never lose your streak!
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 5. **Smart Chat Companion** 🤖
+- A dedicated AI buddy for each mode (Free Write, Reading, RACE).
+- **Persistent Sessions**: Switch tabs without losing your conversation context.
+- **Session Reset**: Automatically starts a fresh chat when you generate a new topic or story.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🛠️ Tech Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Frontend**: React (v18), TypeScript, Vite
+- **Styling**: Tailwind CSS (v4), Lucide React (Icons), Framer Motion (Animations)
+- **State Management**: Zustand
+- **AI Integration**: Anthropic Claude API (Claude 3.5 Haiku)
+- **Persistence**: LocalStorage
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚦 Getting Started
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Prerequisites
+- Node.js (v18 or higher)
+- An Anthropic API Key
+
+### Installation
+
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/yourusername/writing-buddy.git
+    cd writing-buddy
+    ```
+
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Configure Environment Variables**
+    Create a `.env` file in the root directory:
+    ```bash
+    cp .env.example .env
+    ```
+    Add your Anthropic API Key:
+    ```env
+    VITE_ANTHROPIC_API_KEY=your_api_key_here
+    ```
+
+4.  **Run the Development Server**
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
+
+---
+
+## 🤝 Contributing
+
+1.  Fork the Project
+2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the Branch (`git push origin feature/AmazingFeature`)
+5.  Open a Pull Request
+
+---
+
+## 🛡️ License
+
+Distributed under the MIT License.

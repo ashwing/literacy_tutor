@@ -45,8 +45,15 @@
 ## 🚦 Getting Started
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- An Anthropic API Key
+- **Node.js**: Version 18 or higher is required. [Download Node.js here](https://nodejs.org/).
+  - Verify installation by running `node -v` and `npm -v` in your terminal.
+- **Anthropic API Key**: You need an API key from Anthropic to use the AI features.
+
+### Troubleshooting
+If you see `npm: command not found` or similar errors:
+1.  Ensure you have installed Node.js from the link above.
+2.  Restart your terminal or computer after installation to update your system PATH.
+
 
 ### Installation
 

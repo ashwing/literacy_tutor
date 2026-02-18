@@ -5,10 +5,15 @@ import { generateWritingPrompt } from '../../lib/ai-service';
 import { getRandomWritingPrompt } from '../../lib/mock-content';
 
 export const WritingEditor: React.FC = () => {
-    const { text, setText, incrementStats, gradeLevel, currentScore, setCurrentScore, clearMessages } = useAppStore();
+    const { text, setText, incrementStats, gradeLevel, currentScore, setCurrentScore, clearMessages, addSubmission, chatSessions } = useAppStore();
     const [topic, setTopic] = useState(getRandomWritingPrompt());
     const [isGenerating, setIsGenerating] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
+
+    // Reset score when entering the mode
+    React.useEffect(() => {
+        setCurrentScore(null);
+    }, []);
 
     const handleRefreshTopic = async () => {
         setIsGenerating(true);
@@ -18,6 +23,7 @@ export const WritingEditor: React.FC = () => {
             setCurrentScore(null);
             clearMessages('free-write'); // Reset chat for new topic
             setShowConfetti(false);
+            setText(''); // Clear text on new topic
         } catch (error) {
             console.error("Failed to generate topic:", error);
         } finally {
@@ -27,8 +33,37 @@ export const WritingEditor: React.FC = () => {
 
     const handleComplete = () => {
         incrementStats('storiesWritten');
+
+        // Get feedback from last chat message
+        const lastMsg = chatSessions['free-write']?.slice(-1)[0];
+        let feedback = '';
+        if (lastMsg) {
+            try {
+                // Try to parse if it's JSON (the new format)
+                const parsed = JSON.parse(lastMsg.content);
+                feedback = parsed.feedback || lastMsg.content;
+            } catch {
+                feedback = lastMsg.content;
+            }
+        }
+
+        addSubmission({
+            id: crypto.randomUUID(),
+            date: new Date().toISOString(),
+            type: 'free-write',
+            title: topic,
+            content: text,
+            score: currentScore || 0,
+            feedback
+        });
+
         setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
+
+        // Refresh after a short delay to show celebration
+        setTimeout(() => {
+            setShowConfetti(false);
+            handleRefreshTopic();
+        }, 3000);
     };
 
     const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
@@ -75,10 +110,15 @@ export const WritingEditor: React.FC = () => {
                         {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCw className="w-4 h-4" />}
                         New Topic
                     </button>
+                    {currentScore !== null && (
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg font-bold text-sm ${currentScore >= 8 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                            Score: {currentScore}/10
+                        </div>
+                    )}
                     <button
                         onClick={handleComplete}
-                        disabled={currentScore === null || currentScore <= 8}
-                        title={!currentScore || currentScore <= 8 ? "You need a score of 8+ to submit!" : "Publish your story"}
+                        disabled={currentScore === null || currentScore < 8}
+                        title={!currentScore || currentScore < 8 ? "You need a score of 8+ to submit!" : "Publish your story"}
                         className="flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Publish Story

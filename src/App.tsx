@@ -7,6 +7,7 @@ import { GradeSelector } from './components/navigation/GradeSelector';
 import { ReadingComprehension } from './components/modules/ReadingComprehension';
 import { RACEPractice } from './components/modules/RACEPractice';
 import { Dashboard } from './components/dashboard/Dashboard';
+import { Submissions } from './components/dashboard/Submissions';
 
 import { useState } from 'react';
 import { Settings, Bug } from 'lucide-react';
@@ -21,6 +22,8 @@ const AppContent = () => {
     switch (currentMode) {
       case 'dashboard':
         return <Dashboard />;
+      case 'submissions':
+        return <Submissions />;
       case 'reading':
         return <ReadingComprehension />;
       case 'race':

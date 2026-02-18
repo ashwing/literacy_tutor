@@ -11,6 +11,19 @@ interface AppStats {
   storiesWritten: number;
   history: Record<string, DailyStats>;
   lastActiveDate: string;
+  submissions: Submission[];
+}
+
+export interface Submission {
+  id: string;
+  date: string;
+  type: 'free-write' | 'reading' | 'race';
+  title: string;
+  content: string;
+  score: number;
+  feedback?: string;
+  readingQuestions?: { id: number; text: string; answer: string }[];
+  racePrompt?: string;
 }
 
 interface DailyStats {
@@ -31,6 +44,7 @@ const getInitialStats = (): AppStats => {
       const parsed = JSON.parse(saved);
       // Ensure history exists for backward compatibility
       if (!parsed.history) parsed.history = {};
+      if (!parsed.submissions) parsed.submissions = [];
       if (!parsed.lastActiveDate) parsed.lastActiveDate = new Date().toISOString().split('T')[0];
       return parsed;
     }
@@ -44,7 +58,8 @@ const getInitialStats = (): AppStats => {
     streakDays: 1,
     storiesWritten: 0,
     history: {},
-    lastActiveDate: new Date().toISOString().split('T')[0]
+    lastActiveDate: new Date().toISOString().split('T')[0],
+    submissions: []
   };
 };
 
@@ -67,8 +82,8 @@ interface AppState {
   setCurrentScore: (score: number | null) => void;
 
   // Navigation State
-  currentMode: 'free-write' | 'reading' | 'race' | 'dashboard';
-  setCurrentMode: (mode: 'free-write' | 'reading' | 'race' | 'dashboard') => void;
+  currentMode: 'free-write' | 'reading' | 'race' | 'dashboard' | 'submissions';
+  setCurrentMode: (mode: 'free-write' | 'reading' | 'race' | 'dashboard' | 'submissions') => void;
 
   // System State
   isDebugMode: boolean;
@@ -77,6 +92,7 @@ interface AppState {
   // Progress Stats
   stats: AppStats;
   incrementStats: (key: keyof Omit<DailyStats, 'date'>, amount?: number) => void;
+  addSubmission: (submission: Submission) => void;
 
   // Chat State
   chatSessions: Record<string, AIMessage[]>;
@@ -88,13 +104,13 @@ const AppContext = createContext<AppState | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [text, setText] = useState('');
-  const [gradeLevel, setGradeLevel] = useState(3);
+  const [gradeLevel, setGradeLevel] = useState(4); // Default to Grade 4
   const [readingAnswers, setReadingAnswers] = useState<Record<number, string>>({});
   const [raceResponse, setRaceResponse] = useState('');
   const [currentRACEPrompt, setCurrentRACEPrompt] = useState<RACEPrompt | null>(null);
   const [currentReadingPassage, setCurrentReadingPassage] = useState<ReadingPassage | null>(null);
   const [currentScore, setCurrentScore] = useState<number | null>(null);
-  const [currentMode, setCurrentMode] = useState<'free-write' | 'reading' | 'race' | 'dashboard'>('free-write');
+  const [currentMode, setCurrentMode] = useState<'free-write' | 'reading' | 'race' | 'dashboard' | 'submissions'>('free-write');
   const [isDebugMode, setIsDebugMode] = useState(false);
   const [stats, setStats] = useState<AppStats>(getInitialStats);
 
@@ -129,6 +145,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         else newStreak = 1;
       }
 
+      // ... existing incrementStats ...
       return {
         ...prev,
         [key]: (prev[key] as number) + amount,
@@ -137,6 +154,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         lastActiveDate: today
       };
     });
+  };
+
+  const addSubmission = (submission: Submission) => {
+    setStats(prev => ({
+      ...prev,
+      submissions: [submission, ...(prev.submissions || [])]
+    }));
   };
 
   // Chat Session Management
@@ -173,7 +197,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       currentRACEPrompt, setCurrentRACEPrompt,
       currentReadingPassage, setCurrentReadingPassage,
       currentScore, setCurrentScore,
-      chatSessions, addMessage, clearMessages
+      chatSessions, addMessage, clearMessages,
+      addSubmission
     }}>
       {children}
     </AppContext.Provider>

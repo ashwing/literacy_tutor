@@ -14,12 +14,19 @@ export const RACEPractice: React.FC = () => {
         setCurrentRACEPrompt,
         currentScore,
         setCurrentScore,
-        clearMessages
+        clearMessages,
+        addSubmission,
+        chatSessions
     } = useAppStore();
 
     // We only need local state for UI interactions, not data
     const [showConfetti, setShowConfetti] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
+
+    // Reset score when entering the mode
+    useEffect(() => {
+        setCurrentScore(null);
+    }, []);
 
     useEffect(() => {
         if (!currentRACEPrompt) {
@@ -45,8 +52,37 @@ export const RACEPractice: React.FC = () => {
 
     const handleComplete = () => {
         incrementStats('racePromptsCompleted');
+
+        // Get feedback from last chat message
+        const lastMsg = chatSessions['race']?.slice(-1)[0];
+        let feedback = '';
+        if (lastMsg) {
+            try {
+                const parsed = JSON.parse(lastMsg.content);
+                feedback = parsed.feedback || lastMsg.content;
+            } catch {
+                feedback = lastMsg.content;
+            }
+        }
+
+        addSubmission({
+            id: crypto.randomUUID(),
+            date: new Date().toISOString(),
+            type: 'race',
+            title: currentRACEPrompt?.title || 'RACE Practice',
+            content: raceResponse,
+            score: currentScore || 0,
+            feedback,
+            racePrompt: currentRACEPrompt?.prompt
+        });
+
         setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
+
+        // Refresh after a short delay
+        setTimeout(() => {
+            setShowConfetti(false);
+            handleRefresh();
+        }, 3000);
     };
 
     if (!currentRACEPrompt && !isGenerating) return <div>Loading...</div>;
@@ -108,9 +144,15 @@ export const RACEPractice: React.FC = () => {
                                         </span>
                                     ))}
                                 </div>
+                                {currentScore !== null && (
+                                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-bold text-sm ${currentScore >= 8 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                        Score: {currentScore}/10
+                                    </div>
+                                )}
                                 <button
-                                    disabled={currentScore === null || currentScore <= 8}
-                                    title={!currentScore || currentScore <= 8 ? "You need a score of 8+ to submit!" : "Submit your work"}
+                                    onClick={handleComplete}
+                                    disabled={currentScore === null || currentScore < 8}
+                                    title={!currentScore || currentScore < 8 ? "You need a score of 8+ to submit!" : "Submit your work"}
                                     className="flex items-center gap-2 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg font-bold text-sm hover:bg-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <CheckCircle2 className="w-4 h-4" />

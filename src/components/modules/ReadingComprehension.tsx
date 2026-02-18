@@ -14,11 +14,18 @@ export const ReadingComprehension: React.FC = () => {
         setCurrentReadingPassage,
         currentScore,
         setCurrentScore,
-        clearMessages
+        clearMessages,
+        addSubmission,
+        chatSessions
     } = useAppStore();
 
     const [showConfetti, setShowConfetti] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
+
+    // Reset score when entering the mode
+    useEffect(() => {
+        setCurrentScore(null);
+    }, []);
 
     // Load initial passage
     useEffect(() => {
@@ -45,8 +52,43 @@ export const ReadingComprehension: React.FC = () => {
 
     const handleComplete = () => {
         incrementStats('storiesRead');
+
+        // Get feedback from last chat message
+        const lastMsg = chatSessions['reading']?.slice(-1)[0];
+        let feedback = '';
+        if (lastMsg) {
+            try {
+                const parsed = JSON.parse(lastMsg.content);
+                feedback = parsed.feedback || lastMsg.content;
+            } catch {
+                feedback = lastMsg.content;
+            }
+        }
+
+        const questionsWithAnswers = currentReadingPassage?.questions.map(q => ({
+            id: q.id,
+            text: q.text,
+            answer: readingAnswers[q.id] || ''
+        }));
+
+        addSubmission({
+            id: crypto.randomUUID(),
+            date: new Date().toISOString(),
+            type: 'reading',
+            title: currentReadingPassage?.title || 'Reading Comprehension',
+            content: 'Completed reading comprehension questions.',
+            score: currentScore || 0,
+            feedback,
+            readingQuestions: questionsWithAnswers
+        });
+
         setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
+
+        // Refresh after a short delay
+        setTimeout(() => {
+            setShowConfetti(false);
+            handleRefresh();
+        }, 3000);
     };
 
     if (!currentReadingPassage && !isGenerating) return <div>Loading...</div>;
@@ -91,10 +133,15 @@ export const ReadingComprehension: React.FC = () => {
                         <div className="p-8 bg-white h-1/2 overflow-y-auto">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-bold text-indigo-900 uppercase tracking-wider">Comprehension Check</h3>
+                                {currentScore !== null && (
+                                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg font-bold text-sm ${currentScore >= 8 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                        Score: {currentScore}/10
+                                    </div>
+                                )}
                                 <button
                                     onClick={handleComplete}
-                                    disabled={currentScore === null || currentScore <= 8}
-                                    title={!currentScore || currentScore <= 8 ? "You need a score of 8+ to submit!" : "Submit your work"}
+                                    disabled={currentScore === null || currentScore < 8}
+                                    title={!currentScore || currentScore < 8 ? "You need a score of 8+ to submit!" : "Submit your work"}
                                     className="flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-lg font-bold hover:bg-green-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <CheckCircle2 className="w-5 h-5" />
